@@ -182,3 +182,231 @@
     border-right-color: var(--border);
   }
 }
+
+/* ========== StudyHive Responsive Styles ========== */
+
+/* Desktop (1025px and up) */
+@media (min-width: 1025px) {
+  .studyhive-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  .studyhive-nav {
+    padding: 0 24px;
+    height: 56px;
+  }
+
+  .studyhive-grid {
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+
+  .studyhive-card {
+    padding: 20px;
+    border-radius: 16px;
+  }
+
+  .studyhive-button {
+    padding: 11px 22px;
+    font-size: 14px;
+  }
+}
+
+/* Tablet (641px - 1024px) */
+@media (max-width: 1024px) {
+  .studyhive-container {
+    padding: 0 20px;
+  }
+
+  .studyhive-nav {
+    padding: 0 20px;
+    height: 48px;
+    gap: 8px;
+  }
+
+  .studyhive-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px;
+  }
+
+  .studyhive-card {
+    padding: 16px;
+    border-radius: 12px;
+  }
+
+  .studyhive-button {
+    padding: 9px 18px;
+    font-size: 13px;
+  }
+
+  .studyhive-nav-buttons {
+    gap: 4px;
+  }
+
+  .studyhive-nav-button {
+    padding: 5px 10px;
+    font-size: 12px;
+  }
+}
+
+/* Mobile (640px and below) */
+@media (max-width: 640px) {
+  .studyhive-container {
+    padding: 0 16px;
+  }
+
+  .studyhive-nav {
+    padding: 0 12px;
+    height: 48px;
+    gap: 4px;
+    flex-wrap: nowrap;
+  }
+
+  .studyhive-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .studyhive-card {
+    padding: 16px;
+    border-radius: 12px;
+  }
+
+  .studyhive-button {
+    padding: 8px 12px;
+    font-size: 13px;
+  }
+
+  .studyhive-nav-buttons {
+    display: none;
+  }
+
+  .studyhive-search {
+    font-size: 13px;
+  }
+
+  .studyhive-modal {
+    width: 90% !important;
+    max-width: 100% !important;
+    padding: 20px !important;
+  }
+
+  .studyhive-hero {
+    font-size: 32px;
+  }
+
+  .studyhive-heading {
+    font-size: 18px;
+  }
+}
+
+/* Dark mode - no white borders */
+@media (prefers-color-scheme: dark) {
+  .studyhive-card,
+  .studyhive-input,
+  .studyhive-button {
+    border-color: #1a1a1a !important;
+  }
+
+  .studyhive-modal {
+    border-color: #1a1a1a !important;
+  }
+
+  .studyhive-button:focus,
+  .studyhive-input:focus {
+    border-color: #2563eb !important;
+  }
+}
+
+/* Responsive typography */
+@media (max-width: 1024px) {
+  h1 { font-size: 28px; }
+  h2 { font-size: 20px; }
+  h3 { font-size: 16px; }
+}
+
+@media (max-width: 640px) {
+  h1 { font-size: 24px; }
+  h2 { font-size: 18px; }
+  h3 { font-size: 14px; }
+  body { font-size: 14px; }
+}
+
+/* Responsive spacing */
+.spacing-mobile-tight {
+  padding: 12px;
+}
+
+.spacing-mobile-normal {
+  padding: 16px;
+}
+
+.spacing-mobile-loose {
+  padding: 20px;
+}
+
+@media (min-width: 1025px) {
+  .spacing-mobile-tight { padding: 16px; }
+  .spacing-mobile-normal { padding: 24px; }
+  .spacing-mobile-loose { padding: 32px; }
+}
+
+/* Safe area insets for notched phones */
+@supports (padding: max(0px)) {
+  .studyhive-container {
+    padding-left: max(16px, env(safe-area-inset-left));
+    padding-right: max(16px, env(safe-area-inset-right));
+  }
+
+  .studyhive-nav {
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
+  }
+}
+
+/* Touch-friendly tap targets */
+@media (pointer: coarse) {
+  button, a, input, select {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Smooth animations */
+* {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+/* No white borders in forms */
+input,
+textarea,
+select {
+  background-color: inherit;
+  color: inherit;
+}
+
+@media (prefers-color-scheme: dark) {
+  input,
+  textarea,
+  select {
+    background-color: #0a0a0a;
+    border-color: #1a1a1a !important;
+    color: #fff;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: #666;
+  }
+
+  input:focus,
+  textarea:focus,
+  select:focus {
+    border-color: #2563eb !important;
+    outline: 1px solid #2563eb;
+    outline-offset: 0;
+  }
+}
+

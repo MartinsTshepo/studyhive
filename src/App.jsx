@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { supabase } from "./supabase";
+import { useResponsive, getResponsivePadding, getResponsiveGrid, getResponsiveFontSize } from "./hooks/useResponsive";
+import { createColorScheme, createBorderStyle, getSystemDarkMode } from "./hooks/darkModeUtils";
 
 const BUCKET = "study-files";
 
@@ -11,10 +13,11 @@ const subjectIcons = {"Mathematics":"∑","Physical Sciences":"⚗","Life Scienc
 const typeColors = {"Notes":{bg:"#dbeafe",color:"#1e40af"},"Study Guide":{bg:"#d1fae5",color:"#065f46"},"Exam Guidelines":{bg:"#fef3c7",color:"#92400e"}};
 
 export default function App() {
+  // Responsive design
+  const { isMobile, isTablet, isDesktop, screenWidth } = useResponsive();
+  
   // Detect system dark mode preference
-  const [dark, setDark] = useState(() => 
-    window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches
-  );
+  const [dark, setDark] = useState(() => getSystemDarkMode());
   const [view, setView] = useState("home");
   const [resources, setResources] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -49,17 +52,8 @@ export default function App() {
   const [setupErr, setSetupErr] = useState("");
   const [setupProgress, setSetupProgress] = useState("");
 
-  const c = {
-    bg: dark?"#000":"#fff",
-    surface: dark?"#0a0a0a":"#f5f7fa",
-    card: dark?"#111":"#fff",
-    border: dark?"#1e1e1e":"#e5e7eb",
-    text: dark?"#fff":"#0f172a",
-    muted: dark?"#888":"#6b7280",
-    accent:"#2563eb",
-    accentBg: dark?"#0d1f4a":"#eff6ff",
-    glow: dark?"0 0 0 1px #1d4ed8,0 0 12px rgba(37,99,235,0.25)":"none",
-  };
+  // Create color scheme based on dark mode
+  const c = createColorScheme(dark);
 
   // Check user profile for initial setup completion
   const checkUserProfile = async (userId) => {
@@ -365,19 +359,20 @@ export default function App() {
   };
 
   // Shared styles
-  const nav = { background: dark?"rgba(0,0,0,0.9)":"rgba(255,255,255,0.9)", backdropFilter:"blur(20px)", borderBottom:`1px solid ${c.border}`, padding:"0 24px", display:"flex", alignItems:"center", justifyContent:"space-between", height:56, position:"sticky", top:0, zIndex:100 };
-  const navBtn = a => ({ background: a?(dark?"rgba(37,99,235,0.15)":"#eff6ff"):"transparent", border:"none", color: a?c.accent:c.muted, padding:"6px 14px", borderRadius:8, cursor:"pointer", fontSize:14, fontWeight: a?600:400 });
-  const iconBtn = { background:"transparent", border:`1px solid ${c.border}`, color:c.text, width:36, height:36, borderRadius:10, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", fontSize:16 };
-  const pill = a => ({ padding:"6px 14px", borderRadius:20, border:`1px solid ${a?c.accent:c.border}`, background: a?c.accent:"transparent", color: a?"#fff":c.muted, cursor:"pointer", fontSize:13, fontWeight: a?600:400, whiteSpace:"nowrap" });
-  const primaryBtn = { padding:"11px 22px", borderRadius:12, background:c.accent, color:"#fff", border:"none", cursor:"pointer", fontWeight:600, fontSize:14 };
-  const inp = { width:"100%", padding:"10px 14px", borderRadius:10, border:`1px solid ${c.border}`, background:c.surface, color:c.text, fontSize:14, outline:"none", boxSizing:"border-box", marginBottom:10 };
-  const grid = { display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(280px,1fr))", gap:16 };
+  const responsivePadding = getResponsivePadding(isMobile);
+  const nav = { background: dark?"rgba(0,0,0,0.9)":"rgba(255,255,255,0.9)", backdropFilter:"blur(20px)", borderBottom: createBorderStyle(c.border, dark), padding:`0 ${responsivePadding}px`, display:"flex", alignItems:"center", justifyContent:"space-between", height: isMobile?48:56, position:"sticky", top:0, zIndex:100 };
+  const navBtn = a => ({ background: a?(dark?"rgba(37,99,235,0.15)":"#eff6ff"):"transparent", border:"none", color: a?c.accent:c.muted, padding:"6px 14px", borderRadius:8, cursor:"pointer", fontSize: isMobile?12:14, fontWeight: a?600:400 });
+  const iconBtn = { background:"transparent", border: createBorderStyle(c.border, dark), color:c.text, width:36, height:36, borderRadius:10, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", fontSize:16 };
+  const pill = a => ({ padding:"6px 14px", borderRadius:20, border: createBorderStyle(a?c.accent:c.border, dark), background: a?c.accent:"transparent", color: a?"#fff":c.muted, cursor:"pointer", fontSize:13, fontWeight: a?600:400, whiteSpace:"nowrap" });
+  const primaryBtn = { padding: isMobile?"8px 12px":"11px 22px", borderRadius:12, background:c.accent, color:"#fff", border:"none", cursor:"pointer", fontWeight:600, fontSize: isMobile?13:14 };
+  const inp = { width:"100%", padding:"10px 14px", borderRadius:10, border: createBorderStyle(c.border, dark), background:c.surface, color:c.text, fontSize: isMobile?13:14, outline:"none", boxSizing:"border-box", marginBottom:10 };
+  const grid = { display:"grid", gridTemplateColumns: isMobile?"1fr":"repeat(auto-fill,minmax(280px,1fr))", gap: isMobile?12:16 };
 
   const Card = ({ r }) => {
     const tc = typeColors[r.type] || { bg:"#f3f4f6", color:"#374151" };
     return (
       <div
-        style={{ background:c.card, border:`1px solid ${hoveredCard===r.id?c.accent:c.border}`, borderRadius:16, padding:20, cursor:"pointer", transition:"all 0.18s", boxShadow: hoveredCard===r.id?(dark?c.glow:"0 4px 20px rgba(37,99,235,0.12)"):(dark?"none":"0 1px 4px rgba(0,0,0,0.05)") }}
+        style={{ background:c.card, border: createBorderStyle(hoveredCard===r.id?c.accent:c.border, dark), borderRadius: isMobile?12:16, padding: isMobile?16:20, cursor:"pointer", transition:"all 0.18s", boxShadow: hoveredCard===r.id?(dark?c.glow:"0 4px 20px rgba(37,99,235,0.12)"):(dark?"none":"0 1px 4px rgba(0,0,0,0.05)") }}
         onMouseEnter={() => setHoveredCard(r.id)}
         onMouseLeave={() => setHoveredCard(null)}
         onClick={() => { setSelected(r); setView("viewer"); }}
@@ -405,13 +400,13 @@ export default function App() {
     return (
       <div style={{ fontFamily:"-apple-system,BlinkMacSystemFont,'SF Pro Display',sans-serif", background:c.bg, minHeight:"100vh", color:c.text }}>
         <nav style={nav}>
-          <div style={{ fontWeight:700, fontSize:18, color:c.accent, cursor:"pointer" }} onClick={() => { setView("home"); setSelected(null); }}>⌬ StudyHive</div>
+          <div style={{ fontWeight:700, fontSize: isMobile?16:18, color:c.accent, cursor:"pointer" }} onClick={() => { setView("home"); setSelected(null); }}>⌬ StudyHive</div>
           <button style={iconBtn} onClick={() => setDark(d => !d)}>{dark ? "☀️" : "🌙"}</button>
         </nav>
-        <div style={{ maxWidth:680, margin:"0 auto", padding:28 }}>
+        <div style={{ maxWidth:680, margin:"0 auto", padding: isMobile?16:28 }}>
           <button style={{ background:"transparent", border:"none", color:c.accent, cursor:"pointer", fontSize:14, fontWeight:500, marginBottom:16 }} onClick={() => { setView("browse"); setSelected(null); }}>← Back</button>
-          <div style={{ background:c.card, border:`1px solid ${c.border}`, borderRadius:20, overflow:"hidden", boxShadow: dark?c.glow:"0 4px 24px rgba(0,0,0,0.08)" }}>
-            <div style={{ background: dark?"#0d1f4a":"#1e40af", padding:"32px 32px 28px", color:"#fff" }}>
+          <div style={{ background:c.card, border: createBorderStyle(c.border, dark), borderRadius: isMobile?16:20, overflow:"hidden", boxShadow: dark?c.glow:"0 4px 24px rgba(0,0,0,0.08)" }}>
+            <div style={{ background: dark?"#0d1f4a":"#1e40af", padding: isMobile?"24px 20px 20px":"32px 32px 28px", color:"#fff" }}>
               <div style={{ fontSize:11, fontWeight:600, opacity:0.7, textTransform:"uppercase", letterSpacing:1 }}>{selected.type} · {selected.grade}</div>
               <div style={{ fontSize:22, fontWeight:700, margin:"8px 0 4px", lineHeight:1.3 }}>{selected.title}</div>
               <div style={{ fontSize:13, opacity:0.75 }}>by {selected.author} · {new Date(selected.created_at).toLocaleDateString("en-ZA")}</div>
@@ -424,7 +419,7 @@ export default function App() {
                     ? <img src={selected.file_url} alt={selected.title} style={{ width:"100%" }} />
                     : /\.pdf$/i.test(selected.file_url)
                     ? <iframe src={selected.file_url} style={{ width:"100%", height:600, border:"none" }} title={selected.title} />
-                    : <div style={{ padding:32, textAlign:"center" }}>
+                    : <div style={{ padding: isMobile?20:32, textAlign:"center" }}>
                         <div style={{ fontSize:40, marginBottom:8 }}>📄</div>
                         <div style={{ fontWeight:600, marginBottom:12 }}>{selected.file_name}</div>
                         <a href={selected.file_url} target="_blank" rel="noreferrer" style={{ ...primaryBtn, textDecoration:"none", display:"inline-block" }}>⬇ Download File</a>
@@ -432,7 +427,7 @@ export default function App() {
                   }
                 </div>
               ) : (
-                <div style={{ background:c.surface, border:`1px solid ${c.border}`, borderRadius:14, padding:32, textAlign:"center" }}>
+                <div style={{ background:c.surface, border: createBorderStyle(c.border, dark), borderRadius:14, padding: isMobile?20:32, textAlign:"center" }}>
                   <div style={{ fontSize:40, marginBottom:8 }}>📄</div>
                   <div style={{ color:c.muted }}>No file attached to this resource.</div>
                 </div>
@@ -443,7 +438,7 @@ export default function App() {
                 </button>
                 {selected.file_url && (
                   <a href={selected.file_url} target="_blank" rel="noreferrer"
-                    style={{ ...primaryBtn, background:"transparent", border:`1px solid ${c.border}`, color:c.text, textDecoration:"none", flex:1, textAlign:"center" }}>
+                    style={{ ...primaryBtn, background:"transparent", border: createBorderStyle(c.border, dark), color:c.text, textDecoration:"none", flex:1, textAlign:"center" }}>
                     ⬇ Download
                   </a>
                 )}
@@ -471,7 +466,7 @@ export default function App() {
               <div style={{ fontSize:24, fontWeight:700, marginBottom:8 }}>Welcome to StudyHive!⌬</div>
               <p style={{ fontSize:15, color:c.muted, marginBottom:28, lineHeight:1.6 }}>To get started and share knowledge with other SA students, please upload <strong>3 PDF resources</strong>. These can be notes, study guides, or exam guidelines.</p>
               
-              <div style={{ background:c.card, border:`1px solid ${c.border}`, borderRadius:16, padding:32, marginBottom:24 }}>
+              <div style={{ background:c.card, border: createBorderStyle(c.border, dark), borderRadius:16, padding: isMobile?20:32, marginBottom:24 }}>
                 <div style={{ display:"flex", gap:16, marginBottom:20 }}>
                   {[1, 2, 3].map(i => (
                     <div key={i} style={{ flex:1, padding:12, borderRadius:12, background: i <= initialUploads.length ? "#10b981" : c.surface, color: i <= initialUploads.length ? "#fff" : c.muted, fontWeight:600, fontSize:14 }}>
@@ -504,7 +499,7 @@ export default function App() {
                     style={{ display:"none" }}
                   />
                   <div
-                    style={{ border:`2px dashed ${c.border}`, borderRadius:12, padding:"32px", textAlign:"center", color:c.muted, fontSize:13, cursor:"pointer", background:c.surface }}
+                    style={{ border: createBorderStyle(c.border, dark, 2), borderStyle:"dashed", borderRadius:12, padding: isMobile?"24px":"32px", textAlign:"center", color:c.muted, fontSize:13, cursor:"pointer", background:c.surface }}
                     onClick={() => fileRef.current?.click()}
                   >
                     <div style={{ fontSize:28, marginBottom:8 }}>📄</div>
@@ -583,7 +578,7 @@ export default function App() {
                   {types.filter(t => t !== "All Types").map(t => <option key={t}>{t}</option>)}
                 </select>
                 <div
-                  style={{ border:`2px dashed ${file?c.accent:c.border}`, borderRadius:12, padding:"20px", textAlign:"center", color: file?c.accent:c.muted, fontSize:13, marginBottom:14, cursor:"pointer", background: file?c.accentBg:c.surface }}
+                  style={{ border: createBorderStyle(file?c.accent:c.border, dark, 2), borderStyle:"dashed", borderRadius:12, padding: isMobile?"16px":"20px", textAlign:"center", color: file?c.accent:c.muted, fontSize:13, marginBottom:14, cursor:"pointer", background: file?c.accentBg:c.surface }}
                   onClick={() => fileRef.current.click()}
                 >
                   {file
@@ -631,7 +626,7 @@ export default function App() {
       {/* Auth Modal */}
       {authModal && (
         <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.65)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:200, backdropFilter:"blur(8px)" }}>
-          <div style={{ background:c.card, border:`1px solid ${c.border}`, borderRadius:20, padding:32, width:"92%", maxWidth:380, boxShadow: dark?c.glow:"0 8px 40px rgba(0,0,0,0.15)" }}>
+          <div style={{ background:c.card, border: createBorderStyle(c.border, dark), borderRadius:20, padding: isMobile?20:32, width: isMobile?"90%":"92%", maxWidth:380, boxShadow: dark?c.glow:"0 8px 40px rgba(0,0,0,0.15)" }}>
             <div style={{ fontWeight:700, fontSize:20, marginBottom:20 }}>{authMode === "login" ? "Login" : "Sign Up"}</div>
             <input style={inp} placeholder="Email" value={authEmail} onChange={e => setAuthEmail(e.target.value)} type="email" />
             <input style={inp} placeholder="Password" value={authPassword} onChange={e => setAuthPassword(e.target.value)} type="password" />
@@ -639,7 +634,7 @@ export default function App() {
             <button style={{ ...primaryBtn, width:"100%", opacity: authLoading?0.7:1, cursor: authLoading?"not-allowed":"pointer" }} onClick={handleAuth} disabled={authLoading}>
               {authLoading ? "Loading..." : authMode === "login" ? "Login" : "Sign Up"}
             </button>
-            <button style={{ ...primaryBtn, width:"100%", marginTop:10, background:"transparent", border:`1px solid ${c.border}`, color:c.text }} onClick={() => { setAuthMode(authMode === "login" ? "signup" : "login"); setAuthErr(""); }}>
+            <button style={{ ...primaryBtn, width:"100%", marginTop:10, background:"transparent", border: createBorderStyle(c.border, dark), color:c.text }} onClick={() => { setAuthMode(authMode === "login" ? "signup" : "login"); setAuthErr(""); }}>
               {authMode === "login" ? "Need an account? Sign Up" : "Already have an account? Login"}
             </button>
             <button style={{ background:"transparent", border:"none", cursor:"pointer", fontSize:22, color:c.muted, position:"absolute", top:16, right:16 }} onClick={() => { setAuthModal(false); setAuthErr(""); }}>✕</button>
@@ -706,13 +701,13 @@ export default function App() {
       {/* Browse */}
       {view === "browse" && (
         <>
-          <div style={{ padding:"24px 24px 0" }}>
+          <div style={{ padding: isMobile?"20px 16px 0":"24px 24px 0" }}>
             <div style={{ position:"relative" }}>
-              <input style={{ width:"100%", padding:"13px 44px 13px 18px", borderRadius:14, border:`1.5px solid ${c.border}`, background:c.card, color:c.text, fontSize:14, outline:"none", boxSizing:"border-box" }} placeholder="Search resources..." value={search} onChange={e => setSearch(e.target.value)} />
+              <input style={{ width:"100%", padding:"13px 44px 13px 18px", borderRadius:14, border: createBorderStyle(c.border, dark, 1.5), background:c.card, color:c.text, fontSize:14, outline:"none", boxSizing:"border-box" }} placeholder="Search resources..." value={search} onChange={e => setSearch(e.target.value)} />
               <span style={{ position:"absolute", right:14, top:"50%", transform:"translateY(-50%)", color:c.muted }}>🔍</span>
             </div>
           </div>
-          <div style={{ padding:"16px 24px 8px" }}>
+          <div style={{ padding: isMobile?"12px 16px 8px":"16px 24px 8px" }}>
             {[["Grade", grades, activeGrade, setActiveGrade], ["Subject", subjects, activeSubject, setActiveSubject], ["Type", types, activeType, setActiveType]].map(([label, opts, active, setter]) => (
               <div key={label} style={{ marginBottom:16 }}>
                 <div style={{ fontSize:11, color:c.muted, fontWeight:600, textTransform:"uppercase", letterSpacing:1, marginBottom:8 }}>{label}</div>
@@ -722,7 +717,7 @@ export default function App() {
               </div>
             ))}
           </div>
-          <div style={{ padding:"0 24px 40px" }}>
+          <div style={{ padding: isMobile?"0 16px 40px":"0 24px 40px" }}>
             <div style={{ fontSize:13, color:c.muted, marginBottom:14 }}>{filtered.length} resource{filtered.length !== 1 ? "s" : ""} found</div>
             {loading
               ? <div style={{ textAlign:"center", padding:"40px 0", color:c.muted }}>⏳ Loading...</div>
