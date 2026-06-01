@@ -1,8 +1,8 @@
 **StudyHive 🐝**
 
-**StudyHive is a free, open-source study resource platform built 
+StudyHive is a free, open-source study resource platform built 
 specifically for South African high school students (Grades 8–12).
-**
+
 **Inspired by the frustration of quality study material being locked 
 behind expensive paywalls in dollar-based platforms like Scribd **— 
 StudyHive gives every SA student free access to notes, study guides, 
