@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
-import { supabase } from "./supabase";
+import supabase from "./supabase";
 import { useResponsive, getResponsivePadding, getResponsiveGrid, getResponsiveFontSize } from "./hooks/useResponsive";
 import { createColorScheme, createBorderStyle, getSystemDarkMode } from "./hooks/darkModeUtils";
 
