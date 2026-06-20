@@ -648,7 +648,7 @@ export default function App() {
           <div style={{ padding:"52px 24px 32px", textAlign:"center" }}>
             <div style={{ fontSize:40, fontWeight:700, letterSpacing:"-1px",}}>StudyHive ⌬</div>
             <div style={{ fontSize:11, fontWeight:600, letterSpacing:2, color:c.accent, textTransform:"uppercase", marginBottom:12 }}>Beta 02 · Live</div>
-            <p style={{ fontSize:16, color:c.muted, marginBottom:28, maxWidth:480, margin:"0 auto 28px" }}>Free study notes, guides & exam resources — shared by SA students, for SA students.</p>
+            <p style={{ fontSize:16, color:c.muted, marginBottom:28, maxWidth:480, margin:"0 auto 28px" }}>(⇀‸↼‶) study notes, guides & exam resources — shared by SA students. </p>
             <div style={{ maxWidth:520, margin:"0 auto", position:"relative" }}>
               <input
                 style={{ width:"100%", padding:"14px 48px 14px 20px", borderRadius:16, border:`1.5px solid ${c.border}`, background:c.card, color:c.text, fontSize:15, outline:"none", boxSizing:"border-box", boxShadow: dark?c.glow:"0 2px 12px rgba(0,0,0,0.07)" }}
@@ -737,7 +737,7 @@ export default function App() {
       {/* Library */}
       {view === "library" && (
         <div style={{ padding:"28px 24px" }}>
-          <div style={{ fontSize:18, fontWeight:600, marginBottom:18 }}>⭐ My Library</div>
+          <div style={{ fontSize:18, fontWeight:600, marginBottom:18 }}>⋅˚₊‧ ୨🕮୧ ‧₊˚ ⋅My Library</div>
           {bookmarks.length === 0 ? (
             <div style={{ textAlign:"center", padding:"48px 0", color:c.muted }}>
               <div style={{ fontSize:44, marginBottom:10 }}>📚</div>
@@ -752,7 +752,8 @@ export default function App() {
       )}
 
       <div style={{ textAlign:"center", padding:"24px", borderTop:`1px solid ${c.border}`, color:c.muted, fontSize:12 }}>
-        StudyHive Beta 02 · Built for South African students · Free forever ⌬
+        StudyHive Beta 02 · Built for South African students · Free forever (◕ᴥ◕ʋ) 
+        · Note the developer does not claim anyrights to the resources shared this is merely a project
       </div>
       </>
       )}
