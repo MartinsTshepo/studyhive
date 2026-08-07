@@ -33,6 +33,7 @@ export default function App() {
   const [uploadErr, setUploadErr] = useState("");
   const [uploadProgress, setUploadProgress] = useState("");
   const [hoveredCard, setHoveredCard] = useState(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [form, setForm] = useState({ title:"", subject:"Mathematics", grade:"Grade 12", type:"Notes", author:"", description:"" });
   const [file, setFile] = useState(null);
   const fileRef = useRef();
@@ -365,9 +366,10 @@ export default function App() {
   const iconBtn = { background:"transparent", border: createBorderStyle(c.border, dark), color:c.text, width:36, height:36, borderRadius:10, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center", fontSize:16 };
   const pill = a => ({ padding:"6px 14px", borderRadius:20, border: createBorderStyle(a?c.accent:c.border, dark), background: a?c.accent:"transparent", color: a?"#fff":c.muted, cursor:"pointer", fontSize:13, fontWeight: a?600:400, whiteSpace:"nowrap" });
   const primaryBtn = { padding: isMobile?"8px 12px":"11px 22px", borderRadius:12, background:c.accent, color:"#fff", border:"none", cursor:"pointer", fontWeight:600, fontSize: isMobile?13:14 };
+  const mobileMenuPanel = { position:"absolute", top:48, left:0, right:0, background: dark?"rgba(0,0,0,0.97)":"rgba(255,255,255,0.98)", backdropFilter:"blur(20px)", borderBottom: createBorderStyle(c.border, dark), display:"flex", flexDirection:"column", padding:"8px 16px 16px", gap:4, zIndex:99, boxShadow:"0 8px 24px rgba(0,0,0,0.15)" };
+  const mobileMenuBtn = a => ({ background: a?(dark?"rgba(37,99,235,0.15)":"#eff6ff"):"transparent", border:"none", color: a?c.accent:c.text, padding:"12px 14px", borderRadius:10, cursor:"pointer", fontSize:15, fontWeight: a?600:400, textAlign:"left", width:"100%" });
   const inp = { width:"100%", padding:"10px 14px", borderRadius:10, border: createBorderStyle(c.border, dark), background:c.surface, color:c.text, fontSize: isMobile?13:14, outline:"none", boxSizing:"border-box", marginBottom:10 };
   const grid = { display:"grid", gridTemplateColumns: isMobile?"1fr":"repeat(auto-fill,minmax(280px,1fr))", gap: isMobile?12:16 };
-
   const Card = ({ r }) => {
     const tc = typeColors[r.type] || { bg:"#f3f4f6", color:"#374151" };
     return (
@@ -478,7 +480,7 @@ export default function App() {
                   <div style={{ fontSize:13, fontWeight:600, color:c.muted, marginBottom:8 }}>Upload Type:</div>
                   <select style={{ ...inp, marginBottom:0 }} value={form.type} onChange={e => setForm(f => ({ ...f, type:e.target.value }))}>
                     <option>Notes</option>
-<option>Textbook</option>
+                    <option>Textbook</option>
                     <option>Study Guide</option>
                     <option>Exam Guidelines</option>
                     <option>ATP</option>
@@ -598,29 +600,60 @@ export default function App() {
         </div>
       )}
 
-      {/* Nav */}
-      <nav style={{...nav, paddingLeft: isMobile?12:responsivePadding, paddingRight: isMobile?12:responsivePadding }}>
-        <div style={{ fontWeight:700, fontSize: isMobile?16:18, color:c.accent, cursor:"pointer", flexShrink:0 }} onClick={() => setView("home")}>⌬ StudyHive</div>
-        <div style={{ display:"flex", gap: isMobile?2:4, flexGrow:1, justifyContent:"center", alignItems:"center" }}>
-          <button style={{...navBtn(view==="home"), fontSize: isMobile?11:12, padding: isMobile?"4px 8px":"6px 14px" }} onClick={() => setView("home")}>Home</button>
-          <button style={{...navBtn(view==="browse"), fontSize: isMobile?11:12, padding: isMobile?"4px 8px":"6px 14px" }} onClick={() => setView("browse")}>Browse</button>
-          <button style={{...navBtn(view==="library"), fontSize: isMobile?11:12, padding: isMobile?"4px 8px":"6px 14px" }} onClick={() => setView("library")}>Library{bookmarks.length > 0 ? ` (${bookmarks.length})` : ""}</button>
-        </div>
-        <div style={{ display:"flex", gap: isMobile?6:8, alignItems:"center", flexShrink:0 }}>
-          {user ? (
-            <>
-              <div style={{ fontSize: isMobile?11:13, color:c.muted, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis", maxWidth: isMobile?"80px":"auto" }}>👤 {user.email.split("@")[0]}</div>
-              <button style={{ ...primaryBtn, padding: isMobile?"6px 10px":"7px 16px", fontSize: isMobile?12:13, borderRadius:10 }} onClick={openUploadModal}>+ Share</button>
-              <button style={{ ...primaryBtn, padding: isMobile?"6px 10px":"7px 16px", fontSize: isMobile?12:13, borderRadius:10, background:"#ef4444" }} onClick={handleLogout}>Logout</button>
-            </>
-          ) : (
-            <>
-              <button style={{ ...primaryBtn, padding: isMobile?"6px 10px":"7px 16px", fontSize: isMobile?12:13, borderRadius:10 }} onClick={() => { setAuthMode("login"); setAuthModal(true); }}>Login</button>
-              <button style={{ ...primaryBtn, padding: isMobile?"6px 10px":"7px 16px", fontSize: isMobile?12:13, borderRadius:10, background:"#10b981" }} onClick={() => { setAuthMode("signup"); setAuthModal(true); }}>Sign Up</button>
-            </>
-          )}
-          <button style={iconBtn} onClick={() => setDark(d => !d)}>{dark ? "☀️" : "🌙"}</button>
-        </div>
+     {/* Nav */}
+      <nav style={{ ...nav, position:"sticky" }}>
+        <div style={{ fontWeight:700, fontSize:18, color:c.accent, cursor:"pointer" }} onClick={() => { setView("home"); setMobileMenuOpen(false); }}>⌬ StudyHive</div>
+
+        {isMobile ? (
+          <div style={{ display:"flex", gap:8, alignItems:"center" }}>
+            <button style={iconBtn} onClick={() => setDark(d => !d)}>{dark ? "☀️" : "🌙"}</button>
+            <button style={iconBtn} onClick={() => setMobileMenuOpen(o => !o)} aria-label="Menu">{mobileMenuOpen ? "✕" : "☰"}</button>
+          </div>
+        ) : (
+          <>
+            <div style={{ display:"flex", gap:4 }}>
+              <button style={navBtn(view==="home")} onClick={() => setView("home")}>Home</button>
+              <button style={navBtn(view==="browse")} onClick={() => setView("browse")}>Browse</button>
+              <button style={navBtn(view==="library")} onClick={() => setView("library")}>Library{bookmarks.length > 0 ? ` (${bookmarks.length})` : ""}</button>
+            </div>
+            <div style={{ display:"flex", gap:8, alignItems:"center" }}>
+              {user ? (
+                <>
+                  <div style={{ fontSize:13, color:c.muted }}>👤 {user.email.split("@")[0]}</div>
+                  <button style={{ ...primaryBtn, padding:"7px 16px", fontSize:13, borderRadius:10 }} onClick={openUploadModal}>+ Share</button>
+                  <button style={{ ...primaryBtn, padding:"7px 16px", fontSize:13, borderRadius:10, background:"#ef4444" }} onClick={handleLogout}>Logout</button>
+                </>
+              ) : (
+                <>
+                  <button style={{ ...primaryBtn, padding:"7px 16px", fontSize:13, borderRadius:10 }} onClick={() => { setAuthMode("login"); setAuthModal(true); }}>Login</button>
+                  <button style={{ ...primaryBtn, padding:"7px 16px", fontSize:13, borderRadius:10, background:"#10b981" }} onClick={() => { setAuthMode("signup"); setAuthModal(true); }}>Sign Up</button>
+                </>
+              )}
+              <button style={iconBtn} onClick={() => setDark(d => !d)}>{dark ? "☀️" : "🌙"}</button>
+            </div>
+          </>
+        )}
+
+        {isMobile && mobileMenuOpen && (
+          <div style={mobileMenuPanel}>
+            <button style={mobileMenuBtn(view==="home")} onClick={() => { setView("home"); setMobileMenuOpen(false); }}>Home</button>
+            <button style={mobileMenuBtn(view==="browse")} onClick={() => { setView("browse"); setMobileMenuOpen(false); }}>Browse</button>
+            <button style={mobileMenuBtn(view==="library")} onClick={() => { setView("library"); setMobileMenuOpen(false); }}>Library{bookmarks.length > 0 ? ` (${bookmarks.length})` : ""}</button>
+            <div style={{ height:1, background:c.border, margin:"8px 0" }} />
+            {user ? (
+              <>
+                <div style={{ fontSize:13, color:c.muted, padding:"6px 14px" }}>👤 {user.email.split("@")[0]}</div>
+                <button style={{ ...primaryBtn, width:"100%", textAlign:"center" }} onClick={() => { openUploadModal(); setMobileMenuOpen(false); }}>+ Share</button>
+                <button style={{ ...primaryBtn, width:"100%", textAlign:"center", background:"#ef4444", marginTop:8 }} onClick={() => { handleLogout(); setMobileMenuOpen(false); }}>Logout</button>
+              </>
+            ) : (
+              <>
+                <button style={{ ...primaryBtn, width:"100%", textAlign:"center" }} onClick={() => { setAuthMode("login"); setAuthModal(true); setMobileMenuOpen(false); }}>Login</button>
+                <button style={{ ...primaryBtn, width:"100%", textAlign:"center", background:"#10b981", marginTop:8 }} onClick={() => { setAuthMode("signup"); setAuthModal(true); setMobileMenuOpen(false); }}>Sign Up</button>
+              </>
+            )}
+          </div>
+        )}
       </nav>
 
       {/* Auth Modal */}
