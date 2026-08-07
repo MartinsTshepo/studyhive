@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
-import supabase from "./supabase";
-import { useResponsive, getResponsivePadding, getResponsiveGrid, getResponsiveFontSize } from "./hooks/useResponsive";
+import { supabase } from "./supabase";
+import { useResponsive, getResponsivePadding } from "./hooks/useResponsive";
 import { createColorScheme, createBorderStyle, getSystemDarkMode } from "./hooks/darkModeUtils";
 
 const BUCKET = "study-files";
@@ -14,7 +14,7 @@ const typeColors = {"Notes":{bg:"#dbeafe",color:"#1e40af"},"Study Guide":{bg:"#d
 
 export default function App() {
   // Responsive design
-  const { isMobile, isTablet, isDesktop, screenWidth } = useResponsive();
+  const { isMobile } = useResponsive();
   
   // Detect system dark mode preference
   const [dark, setDark] = useState(() => getSystemDarkMode());
@@ -478,7 +478,7 @@ export default function App() {
                   <div style={{ fontSize:13, fontWeight:600, color:c.muted, marginBottom:8 }}>Upload Type:</div>
                   <select style={{ ...inp, marginBottom:0 }} value={form.type} onChange={e => setForm(f => ({ ...f, type:e.target.value }))}>
                     <option>Notes</option>
-                    <Option>Textbook</Option>
+<option>Textbook</option>
                     <option>Study Guide</option>
                     <option>Exam Guidelines</option>
                     <option>ATP</option>
@@ -563,14 +563,14 @@ export default function App() {
                   <div style={{ fontWeight:700, fontSize:18 }}>Share a Resource</div>
                   <button style={{ background:"transparent", border:"none", cursor:"pointer", fontSize:22, color:c.muted }} onClick={resetUpload}>✕</button>
                 </div>
-                <input style={inp} placeholder="Resource title *" value={form.title} onChange={e => setForm(f => ({ ...f, title:e.target.value }))} />
+                <input id="resourceTitle" name="resourceTitle" style={inp} placeholder="Resource title *" value={form.title} onChange={e => setForm(f => ({ ...f, title:e.target.value }))} />
                 <div style={{ fontSize:13, color:c.muted, marginBottom:10, padding:"8px 12px", background:c.surface, borderRadius:8 }}>👤 Sharing as: <strong>{user?.email}</strong></div>
-                <textarea style={{ ...inp, height:80, resize:"none" }} placeholder="Short description (optional)" value={form.description} onChange={e => setForm(f => ({ ...f, description:e.target.value }))} />
+                <textarea id="resourceDescription" name="resourceDescription" style={{ ...inp, height:80, resize:"none" }} placeholder="Short description (optional)" value={form.description} onChange={e => setForm(f => ({ ...f, description:e.target.value }))} />
                 <div style={{ display:"flex", gap:8, marginBottom:10 }}>
-                  <select style={{ ...inp, marginBottom:0, flex:1 }} value={form.subject} onChange={e => setForm(f => ({ ...f, subject:e.target.value }))}>
+                  <select id="resourceSubject" name="resourceSubject" style={{ ...inp, marginBottom:0, flex:1 }} value={form.subject} onChange={e => setForm(f => ({ ...f, subject:e.target.value }))}>
                     {subjects.filter(s => s !== "All").map(s => <option key={s}>{s}</option>)}
                   </select>
-                  <select style={{ ...inp, marginBottom:0, flex:1 }} value={form.grade} onChange={e => setForm(f => ({ ...f, grade:e.target.value }))}>
+                  <select id="resourceGrade" name="resourceGrade" style={{ ...inp, marginBottom:0, flex:1 }} value={form.grade} onChange={e => setForm(f => ({ ...f, grade:e.target.value }))}>
                     {grades.filter(g => g !== "All Grades").map(g => <option key={g}>{g}</option>)}
                   </select>
                 </div>
@@ -599,24 +599,24 @@ export default function App() {
       )}
 
       {/* Nav */}
-      <nav style={nav}>
-        <div style={{ fontWeight:700, fontSize:18, color:c.accent, cursor:"pointer" }} onClick={() => setView("home")}>⌬ StudyHive</div>
-        <div style={{ display:"flex", gap:4 }}>
-          <button style={navBtn(view==="home")} onClick={() => setView("home")}>Home</button>
-          <button style={navBtn(view==="browse")} onClick={() => setView("browse")}>Browse</button>
-          <button style={navBtn(view==="library")} onClick={() => setView("library")}>Library{bookmarks.length > 0 ? ` (${bookmarks.length})` : ""}</button>
+      <nav style={{...nav, paddingLeft: isMobile?12:responsivePadding, paddingRight: isMobile?12:responsivePadding }}>
+        <div style={{ fontWeight:700, fontSize: isMobile?16:18, color:c.accent, cursor:"pointer", flexShrink:0 }} onClick={() => setView("home")}>⌬ StudyHive</div>
+        <div style={{ display:"flex", gap: isMobile?2:4, flexGrow:1, justifyContent:"center", alignItems:"center" }}>
+          <button style={{...navBtn(view==="home"), fontSize: isMobile?11:12, padding: isMobile?"4px 8px":"6px 14px" }} onClick={() => setView("home")}>Home</button>
+          <button style={{...navBtn(view==="browse"), fontSize: isMobile?11:12, padding: isMobile?"4px 8px":"6px 14px" }} onClick={() => setView("browse")}>Browse</button>
+          <button style={{...navBtn(view==="library"), fontSize: isMobile?11:12, padding: isMobile?"4px 8px":"6px 14px" }} onClick={() => setView("library")}>Library{bookmarks.length > 0 ? ` (${bookmarks.length})` : ""}</button>
         </div>
-        <div style={{ display:"flex", gap:8, alignItems:"center" }}>
+        <div style={{ display:"flex", gap: isMobile?6:8, alignItems:"center", flexShrink:0 }}>
           {user ? (
             <>
-              <div style={{ fontSize:13, color:c.muted }}>👤 {user.email.split("@")[0]}</div>
-              <button style={{ ...primaryBtn, padding:"7px 16px", fontSize:13, borderRadius:10 }} onClick={openUploadModal}>+ Share</button>
-              <button style={{ ...primaryBtn, padding:"7px 16px", fontSize:13, borderRadius:10, background:"#ef4444" }} onClick={handleLogout}>Logout</button>
+              <div style={{ fontSize: isMobile?11:13, color:c.muted, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis", maxWidth: isMobile?"80px":"auto" }}>👤 {user.email.split("@")[0]}</div>
+              <button style={{ ...primaryBtn, padding: isMobile?"6px 10px":"7px 16px", fontSize: isMobile?12:13, borderRadius:10 }} onClick={openUploadModal}>+ Share</button>
+              <button style={{ ...primaryBtn, padding: isMobile?"6px 10px":"7px 16px", fontSize: isMobile?12:13, borderRadius:10, background:"#ef4444" }} onClick={handleLogout}>Logout</button>
             </>
           ) : (
             <>
-              <button style={{ ...primaryBtn, padding:"7px 16px", fontSize:13, borderRadius:10 }} onClick={() => { setAuthMode("login"); setAuthModal(true); }}>Login</button>
-              <button style={{ ...primaryBtn, padding:"7px 16px", fontSize:13, borderRadius:10, background:"#10b981" }} onClick={() => { setAuthMode("signup"); setAuthModal(true); }}>Sign Up</button>
+              <button style={{ ...primaryBtn, padding: isMobile?"6px 10px":"7px 16px", fontSize: isMobile?12:13, borderRadius:10 }} onClick={() => { setAuthMode("login"); setAuthModal(true); }}>Login</button>
+              <button style={{ ...primaryBtn, padding: isMobile?"6px 10px":"7px 16px", fontSize: isMobile?12:13, borderRadius:10, background:"#10b981" }} onClick={() => { setAuthMode("signup"); setAuthModal(true); }}>Sign Up</button>
             </>
           )}
           <button style={iconBtn} onClick={() => setDark(d => !d)}>{dark ? "☀️" : "🌙"}</button>
@@ -625,19 +625,19 @@ export default function App() {
 
       {/* Auth Modal */}
       {authModal && (
-        <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.65)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:200, backdropFilter:"blur(8px)" }}>
-          <div style={{ background:c.card, border: createBorderStyle(c.border, dark), borderRadius:20, padding: isMobile?20:32, width: isMobile?"90%":"92%", maxWidth:380, boxShadow: dark?c.glow:"0 8px 40px rgba(0,0,0,0.15)" }}>
-            <div style={{ fontWeight:700, fontSize:20, marginBottom:20 }}>{authMode === "login" ? "Login" : "Sign Up"}</div>
-            <input style={inp} placeholder="Email" value={authEmail} onChange={e => setAuthEmail(e.target.value)} type="email" />
-            <input style={inp} placeholder="Password" value={authPassword} onChange={e => setAuthPassword(e.target.value)} type="password" />
-            {authErr && <div style={{ color: authErr.includes("Check your email") ? "#10b981" : "#dc2626", fontSize:13, marginBottom:10, padding:"8px 12px", background: authErr.includes("Check your email") ? "#f0fdf4" : "#fef2f2", borderRadius:8 }}>{authErr}</div>}
-            <button style={{ ...primaryBtn, width:"100%", opacity: authLoading?0.7:1, cursor: authLoading?"not-allowed":"pointer" }} onClick={handleAuth} disabled={authLoading}>
+        <div style={{ position:"fixed", inset:0, background:"rgba(0,0,0,0.65)", display:"flex", alignItems:"center", justifyContent:"center", zIndex:200, backdropFilter:"blur(8px)", padding: isMobile?12:0 }}>
+          <div style={{ background:c.card, border: createBorderStyle(c.border, dark), borderRadius:20, padding: isMobile?24:32, width:"100%", maxWidth:420, boxShadow: dark?c.glow:"0 8px 40px rgba(0,0,0,0.15)", position:"relative", display:"flex", flexDirection:"column", gap:12 }}>
+            <div style={{ fontWeight:700, fontSize: isMobile?18:20, marginBottom:8 }}>{authMode === "login" ? "Login" : "Sign Up"}</div>
+            <input id="authEmail" name="email" autoComplete="email" style={{...inp, marginBottom:0 }} placeholder="Email" value={authEmail} onChange={e => setAuthEmail(e.target.value)} type="email" />
+            <input id="authPassword" name="password" autoComplete="current-password" style={{...inp, marginBottom:0 }} placeholder="Password" value={authPassword} onChange={e => setAuthPassword(e.target.value)} type="password" />
+            {authErr && <div style={{ color: authErr.includes("Check your email") ? "#10b981" : "#dc2626", fontSize:13, padding:"10px 12px", background: authErr.includes("Check your email") ? "#f0fdf4" : "#fef2f2", borderRadius:8, textAlign:"center" }}>{authErr}</div>}
+            <button style={{ ...primaryBtn, width:"100%", marginTop:4, opacity: authLoading?0.7:1, cursor: authLoading?"not-allowed":"pointer" }} onClick={handleAuth} disabled={authLoading}>
               {authLoading ? "Loading..." : authMode === "login" ? "Login" : "Sign Up"}
             </button>
-            <button style={{ ...primaryBtn, width:"100%", marginTop:10, background:"transparent", border: createBorderStyle(c.border, dark), color:c.text }} onClick={() => { setAuthMode(authMode === "login" ? "signup" : "login"); setAuthErr(""); }}>
+            <button style={{ ...primaryBtn, width:"100%", background:"transparent", border: createBorderStyle(c.border, dark), color:c.text }} onClick={() => { setAuthMode(authMode === "login" ? "signup" : "login"); setAuthErr(""); }}>
               {authMode === "login" ? "Need an account? Sign Up" : "Already have an account? Login"}
             </button>
-            <button style={{ background:"transparent", border:"none", cursor:"pointer", fontSize:22, color:c.muted, position:"absolute", top:16, right:16 }} onClick={() => { setAuthModal(false); setAuthErr(""); }}>✕</button>
+            <button style={{ background:"transparent", border:"none", cursor:"pointer", fontSize:22, color:c.muted, position:"absolute", top:12, right:12 }} onClick={() => { setAuthModal(false); setAuthErr(""); }}>✕</button>
           </div>
         </div>
       )}
@@ -648,9 +648,11 @@ export default function App() {
           <div style={{ padding:"52px 24px 32px", textAlign:"center" }}>
             <div style={{ fontSize:40, fontWeight:700, letterSpacing:"-1px",}}>StudyHive ⌬</div>
             <div style={{ fontSize:11, fontWeight:600, letterSpacing:2, color:c.accent, textTransform:"uppercase", marginBottom:12 }}>Beta 02 · Live</div>
-            <p style={{ fontSize:16, color:c.muted, marginBottom:28, maxWidth:480, margin:"0 auto 28px" }}>(⇀‸↼‶) study notes, guides & exam resources — shared by SA students. </p>
+            <p style={{ fontSize:16, color:c.muted, marginBottom:28, maxWidth:480, margin:"0 auto 28px" }}>Free study notes, guides & exam resources — shared by SA students, for SA students.</p>
             <div style={{ maxWidth:520, margin:"0 auto", position:"relative" }}>
               <input
+                id="searchHome"
+                name="search"
                 style={{ width:"100%", padding:"14px 48px 14px 20px", borderRadius:16, border:`1.5px solid ${c.border}`, background:c.card, color:c.text, fontSize:15, outline:"none", boxSizing:"border-box", boxShadow: dark?c.glow:"0 2px 12px rgba(0,0,0,0.07)" }}
                 placeholder="Search notes, study guides, subjects..."
                 value={search}
@@ -664,13 +666,13 @@ export default function App() {
 
           <div style={{ padding:"0 24px 28px" }}>
             <div style={{ fontSize:18, fontWeight:600, marginBottom:14 }}>Browse by subject</div>
-            <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(120px,1fr))", gap:10 }}>
+            <div style={{ display:"grid", gridTemplateColumns:"repeat(2,1fr)", gap:12, maxWidth:"100%" }}>
               {subjects.filter(s => s !== "All").map(sub => (
                 <div key={sub}
-                  style={{ background: activeSubject===sub?c.accentBg:c.surface, border:`1px solid ${activeSubject===sub?c.accent:c.border}`, borderRadius:14, padding:"14px 8px", textAlign:"center", cursor:"pointer", transition:"all 0.15s" }}
+                  style={{ background: activeSubject===sub?c.accentBg:c.surface, border:`1px solid ${activeSubject===sub?c.accent:c.border}`, borderRadius:14, padding:"16px 12px", textAlign:"center", cursor:"pointer", transition:"all 0.15s", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center" }}
                   onClick={() => { setActiveSubject(sub); setView("browse"); }}>
-                  <div style={{ fontSize:24, marginBottom:4 }}>{subjectIcons[sub] || "📚"}</div>
-                  <div style={{ fontSize:12, fontWeight:500, color:c.text }}>{sub}</div>
+                  <div style={{ fontSize:28, marginBottom:6 }}>{subjectIcons[sub] || "📚"}</div>
+                  <div style={{ fontSize:12, fontWeight:500, color:c.text, lineHeight:"1.3" }}>{sub}</div>
                 </div>
               ))}
             </div>
@@ -703,7 +705,7 @@ export default function App() {
         <>
           <div style={{ padding: isMobile?"20px 16px 0":"24px 24px 0" }}>
             <div style={{ position:"relative" }}>
-              <input style={{ width:"100%", padding:"13px 44px 13px 18px", borderRadius:14, border: createBorderStyle(c.border, dark, 1.5), background:c.card, color:c.text, fontSize:14, outline:"none", boxSizing:"border-box" }} placeholder="Search resources..." value={search} onChange={e => setSearch(e.target.value)} />
+              <input id="searchBrowse" name="search" style={{ width:"100%", padding:"13px 44px 13px 18px", borderRadius:14, border: createBorderStyle(c.border, dark, 1.5), background:c.card, color:c.text, fontSize:14, outline:"none", boxSizing:"border-box" }} placeholder="Search resources..." value={search} onChange={e => setSearch(e.target.value)} />
               <span style={{ position:"absolute", right:14, top:"50%", transform:"translateY(-50%)", color:c.muted }}>🔍</span>
             </div>
           </div>
@@ -737,7 +739,7 @@ export default function App() {
       {/* Library */}
       {view === "library" && (
         <div style={{ padding:"28px 24px" }}>
-          <div style={{ fontSize:18, fontWeight:600, marginBottom:18 }}>⋅˚₊‧ ୨🕮୧ ‧₊˚ ⋅My Library</div>
+          <div style={{ fontSize:18, fontWeight:600, marginBottom:18 }}>⭐ My Library</div>
           {bookmarks.length === 0 ? (
             <div style={{ textAlign:"center", padding:"48px 0", color:c.muted }}>
               <div style={{ fontSize:44, marginBottom:10 }}>📚</div>
@@ -752,8 +754,7 @@ export default function App() {
       )}
 
       <div style={{ textAlign:"center", padding:"24px", borderTop:`1px solid ${c.border}`, color:c.muted, fontSize:12 }}>
-        StudyHive Beta 02 · Built for South African students · Free forever (◕ᴥ◕ʋ) 
-        · Note the developer does not claim anyrights to the resources shared this is merely a project
+        StudyHive Beta 02 · Built for South African students · Free forever ⌬
       </div>
       </>
       )}
