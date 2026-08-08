@@ -6,6 +6,7 @@ import {createColorScheme, createBorderStyle, getSystemDarkMode } from "./hooks/
 
 const BUCKET = "study-files";
 
+
 const subjects = ["All","Mathematics","Physical Sciences","Life Sciences","English","Afrikaans","History","Geography","Accounting","Business Studies","Economics","CAT"];
 const grades = ["All Grades","Grade 8","Grade 9","Grade 10","Grade 11","Grade 12"];
 const types = ["All Types","Notes","Study Guide","Exam Guidelines"];
