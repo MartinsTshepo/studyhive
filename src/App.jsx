@@ -1,8 +1,16 @@
-import { useState, useEffect, useRef } from "react";
-import { v4 as uuidv4 } from "uuid";
-import { supabase } from "./supabase";
-import { useResponsive, getResponsivePadding } from "./hooks/useResponsive";
-import { createColorScheme, createBorderStyle, getSystemDarkMode } from "./hooks/darkModeUtils";
+import {useState, useEffect, useRef } from "react";
+import {v4 as uuidv4 } from "uuid";
+import {supabase } from "./supabase";
+import {useResponsive, getResponsivePadding } from "./hooks/useResponsive";
+import {createColorScheme, createBorderStyle, getSystemDarkMode } from "./hooks/darkModeUtils";
+import {createClient} from '@supabase/supabase-js'
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+// Safety check to ensure your variables are loading correctly
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('Supabase credentials missing! Check your .env.local file.')}
+export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
 const BUCKET = "study-files";
 
