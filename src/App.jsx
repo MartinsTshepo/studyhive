@@ -35,6 +35,7 @@ export default function App() {
   const [uploadProgress, setUploadProgress] = useState("");
   const [hoveredCard, setHoveredCard] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [form, setForm] = useState({ title:"", subject:"Mathematics", grade:"Grade 12", type:"Notes", author:"", description:"" });
   const [file, setFile] = useState(null);
   const fileRef = useRef();
