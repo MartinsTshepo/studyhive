@@ -1,0 +1,518 @@
+diff --git a/.env.example b/.env.example
+new file mode 100644
+index 0000000..4930b7a
+--- /dev/null
++++ b/.env.example
+@@ -0,0 +1,9 @@
++# Copy this file to .env for local development (.env is git-ignored).
++# For the deployed site, add the same two values as GitHub repository secrets instead.
++#
++# Find both in Supabase: Project Settings -> API.
++VITE_SUPABASE_URL=https://YOUR-PROJECT-REF.supabase.co
++
++# The anon / publishable key is designed to be public (it ships in the browser bundle;
++# Row Level Security protects the data). NEVER put the service_role / secret key here.
++VITE_SUPABASE_ANON_KEY=YOUR-ANON-OR-PUBLISHABLE-KEY
+diff --git a/.github/workflows/deploy.yml b/.github/workflows/deploy.yml
+new file mode 100644
+index 0000000..a42f8c6
+--- /dev/null
++++ b/.github/workflows/deploy.yml
+@@ -0,0 +1,75 @@
++# Builds the Vite/React app and deploys it to GitHub Pages.
++#
++# One-time setup (repo → Settings):
++#   1. Pages → Build and deployment → Source: "GitHub Actions"
++#   2. Secrets and variables → Actions → add two repository secrets:
++#        VITE_SUPABASE_URL        (Supabase → Project Settings → API → Project URL)
++#        VITE_SUPABASE_ANON_KEY   (the anon / publishable key — NOT the service_role / secret key)
++name: Deploy StudyHive to GitHub Pages
++
++on:
++  # Runs on pushes to the default branch
++  push:
++    branches: ["master"]
++
++  # Allows you to run this workflow manually from the Actions tab
++  workflow_dispatch:
++
++# Permissions the GITHUB_TOKEN needs to publish to GitHub Pages
++permissions:
++  contents: read
++  pages: write
++  id-token: write
++
++# One deployment at a time; let an in-progress production deploy finish
++concurrency:
++  group: "pages"
++  cancel-in-progress: false
++
++jobs:
++  build:
++    runs-on: ubuntu-latest
++    env:
++      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
++      VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
++    steps:
++      - name: Checkout
++        uses: actions/checkout@v4
++
++      - name: Fail early if Supabase secrets are missing
++        run: |
++          if [ -z "$VITE_SUPABASE_URL" ] || [ -z "$VITE_SUPABASE_ANON_KEY" ]; then
++            echo "::error::Missing repository secrets VITE_SUPABASE_URL and/or VITE_SUPABASE_ANON_KEY. Add them under Settings → Secrets and variables → Actions."
++            exit 1
++          fi
++
++      - name: Setup Node
++        uses: actions/setup-node@v4
++        with:
++          node-version: 22
++          cache: npm
++
++      - name: Install dependencies
++        run: npm ci
++
++      - name: Build
++        run: npm run build
++
++      - name: Setup Pages
++        uses: actions/configure-pages@v5
++
++      - name: Upload artifact
++        uses: actions/upload-pages-artifact@v3
++        with:
++          path: ./dist
++
++  deploy:
++    environment:
++      name: github-pages
++      url: ${{ steps.deployment.outputs.page_url }}
++    runs-on: ubuntu-latest
++    needs: build
++    steps:
++      - name: Deploy to GitHub Pages
++        id: deployment
++        uses: actions/deploy-pages@v5
+diff --git a/.github/workflows/jekyll-gh-pages.yml b/.github/workflows/jekyll-gh-pages.yml
+deleted file mode 100644
+index 35b3230..0000000
+--- a/.github/workflows/jekyll-gh-pages.yml
++++ /dev/null
+@@ -1,51 +0,0 @@
+-# Sample workflow for building and deploying a Jekyll site to GitHub Pages
+-name: Deploy Jekyll with GitHub Pages dependencies preinstalled
+-
+-on:
+-  # Runs on pushes targeting the default branch
+-  push:
+-    branches: ["master"]
+-
+-  # Allows you to run this workflow manually from the Actions tab
+-  workflow_dispatch:
+-
+-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+-permissions:
+-  contents: read
+-  pages: write
+-  id-token: write
+-
+-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
+-# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+-concurrency:
+-  group: "pages"
+-  cancel-in-progress: false
+-
+-jobs:
+-  # Build job
+-  build:
+-    runs-on: ubuntu-latest
+-    steps:
+-      - name: Checkout
+-        uses: actions/checkout@v4
+-      - name: Setup Pages
+-        uses: actions/configure-pages@v5
+-      - name: Build with Jekyll
+-        uses: actions/jekyll-build-pages@v1
+-        with:
+-          source: ./
+-          destination: ./_site
+-      - name: Upload artifact
+-        uses: actions/upload-pages-artifact@v3
+-
+-  # Deployment job
+-  deploy:
+-    environment:
+-      name: github-pages
+-      url: ${{ steps.deployment.outputs.page_url }}
+-    runs-on: ubuntu-latest
+-    needs: build
+-    steps:
+-      - name: Deploy to GitHub Pages
+-        id: deployment
+-        uses: actions/deploy-pages@v5
+diff --git a/README.md b/README.md
+index 7335b3e..52a3b8d 100644
+--- a/README.md
++++ b/README.md
+@@ -32,8 +32,25 @@ StudyHive is a community-powered platform where:
+ 
+ **Built With**
+ - React + Vite
+-- Supabase (database + file storage)
+-- Vercel (hosting)
++- Supabase (database, auth + file storage)
++- GitHub Pages (hosting, deployed by GitHub Actions)
++
++**Run it locally**
++```bash
++npm install
++cp .env.example .env     # then fill in your Supabase URL + anon key
++npm run dev
++```
++
++**Backend setup (Supabase)**
++1. Create a project at [supabase.com](https://supabase.com).
++2. Open the SQL Editor and run [`supabase/schema.sql`](supabase/schema.sql). It creates the tables, Row Level Security policies, and the `study-files` storage bucket.
++3. Authentication → URL Configuration: set **Site URL** to your deployed site (e.g. `https://martinstshepo.github.io/studyhive/`) and add it, plus `http://localhost:5173/**`, to **Redirect URLs** so sign-up confirmation emails land in the right place.
++
++**Deploying (GitHub Pages)**
++1. Repo → Settings → Pages → Source: **GitHub Actions**.
++2. Repo → Settings → Secrets and variables → Actions → add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` (the anon/publishable key, never the service_role key).
++3. Push to `master` (or run the workflow manually from the Actions tab). The site publishes to `https://<your-username>.github.io/studyhive/`.
+ 
+ **Contributing**
+ StudyHive is open source and welcomes contributions from 
+diff --git a/package.json b/package.json
+index 1323cda..ef954d5 100644
+--- a/package.json
++++ b/package.json
+@@ -1,8 +1,29 @@
+ {
+-  "rewrites": [
+-    {
+-      "source": "/(.*)",
+-      "destination": "/index.html"
+-    }
+-  ]
++  "name": "studyhive",
++  "private": true,
++  "version": "0.0.0",
++  "type": "module",
++  "scripts": {
++    "dev": "vite",
++    "build": "vite build",
++    "lint": "eslint .",
++    "preview": "vite preview"
++  },
++  "dependencies": {
++    "@supabase/supabase-js": "^2.106.0",
++    "react": "^19.2.6",
++    "react-dom": "^19.2.6",
++    "uuid": "^14.0.0"
++  },
++  "devDependencies": {
++    "@eslint/js": "^10.0.1",
++    "@types/react": "^19.2.14",
++    "@types/react-dom": "^19.2.3",
++    "@vitejs/plugin-react": "^6.0.1",
++    "eslint": "^10.3.0",
++    "eslint-plugin-react-hooks": "^7.1.1",
++    "eslint-plugin-react-refresh": "^0.5.2",
++    "globals": "^17.6.0",
++    "vite": "^8.0.12"
++  }
+ }
+diff --git a/src/App.jsx b/src/App.jsx
+index 67f8c36..3e577ef 100644
+--- a/src/App.jsx
++++ b/src/App.jsx
+@@ -171,7 +171,12 @@ export default function App() {
+     setAuthLoading(true);
+     try {
+       if (authMode === "signup") {
+-        const { error } = await supabase.auth.signUp({ email: authEmail, password: authPassword });
++        const { error } = await supabase.auth.signUp({
++          email: authEmail,
++          password: authPassword,
++          // Send the confirmation link back to wherever the site is hosted (GitHub Pages path included).
++          options: { emailRedirectTo: window.location.origin + import.meta.env.BASE_URL },
++        });
+         if (error) throw error;
+         setAuthErr("Check your email to confirm signup!");
+       } else {
+diff --git a/src/SupabaseTestRunner.jsx b/src/SupabaseTestRunner.jsx
+index 879536d..330e0dd 100644
+--- a/src/SupabaseTestRunner.jsx
++++ b/src/SupabaseTestRunner.jsx
+@@ -14,7 +14,7 @@ export default function SupabaseTestRunner() {
+     
+     try {
+       console.clear();
+-      log('%c🧪 STUDYHIVE SUPABASE TEST SUITE 🧪', 'color: #2563eb; font-size: 16px; font-weight: bold;');
++      console.log('%c🧪 STUDYHIVE SUPABASE TEST SUITE 🧪','color: #2563eb; font-size: 16px; font-weight: bold;');
+       
+       const result = await runAllTests();
+       
+@@ -45,7 +45,7 @@ export default function SupabaseTestRunner() {
+     
+     try {
+       console.clear();
+-      log('%c📤 UPLOAD FLOW SIMULATION 📤', 'color: #10b981; font-size: 16px; font-weight: bold;');
++      console.log('%c📤 UPLOAD FLOW SIMULATION 📤','color: #10b981; font-size: 16px; font-weight: bold;');
+       
+       const result = await simulateUploadFlow();
+       
+diff --git a/src/supabase.js b/src/supabase.js
+index ca18ac7..383b9c0 100644
+--- a/src/supabase.js
++++ b/src/supabase.js
+@@ -1,8 +1,16 @@
+ import { createClient } from '@supabase/supabase-js'
+ 
+-const supabase = createClient(
+-  import.meta.env.VITE_SUPABASE_URL,
+-  import.meta.env.VITE_SUPABASE_ANON_KEY
+-)
++const url = import.meta.env.VITE_SUPABASE_URL
++const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+ 
++if (!url || !anonKey) {
++  throw new Error(
++    'Missing Supabase config: set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY ' +
++      '(copy .env.example to .env locally, or add them as GitHub repository secrets for the deployed site).'
++  )
++}
++
++// Exported both ways: App.jsx and the test files use the named import,
++// so keep it alongside the default export.
++export const supabase = createClient(url, anonKey)
+ export default supabase
+diff --git a/src/supabaseTests.js b/src/supabaseTests.js
+index 4586269..5a97fe0 100644
+--- a/src/supabaseTests.js
++++ b/src/supabaseTests.js
+@@ -67,7 +67,7 @@ async function testTablesExist() {
+   
+   for (const table of tables) {
+     try {
+-      const { data, error } = await supabase
++      const { error } = await supabase
+         .from(table)
+         .select('*')
+         .limit(1);
+@@ -272,7 +272,7 @@ async function testFilterQueries() {
+         }
+       }
+ 
+-      const { data, error } = await query;
++      const { error } = await query;
+ 
+       if (error && error.code !== 'PGRST116') {
+         log(`⚠️  WARNING: ${filter.name} - ${error.message}`, 'yellow');
+diff --git a/supabase/schema.sql b/supabase/schema.sql
+new file mode 100644
+index 0000000..64dfd88
+--- /dev/null
++++ b/supabase/schema.sql
+@@ -0,0 +1,168 @@
++-- StudyHive backend schema for Supabase.
++--
++-- Run it in: Supabase Dashboard -> SQL Editor -> New query -> paste -> Run.
++-- It is idempotent, so re-running it is safe.
++--
++-- NOTE: this was reconstructed from what the app actually queries (src/App.jsx),
++-- because the original schema was not saved in the repo. If your ORIGINAL Supabase
++-- project still exists (even if paused), restore that instead and skip this file.
++
++-- =====================================================================
++-- Tables
++-- =====================================================================
++
++-- Shared study resources (what the Browse / Home pages list).
++create table if not exists public.resources (
++  id           uuid primary key default gen_random_uuid(),
++  title        text not null,
++  subject      text,
++  grade        text,
++  type         text,
++  author       text,
++  description  text,
++  file_url     text,
++  file_name    text,
++  user_id      uuid not null references auth.users (id) on delete cascade,
++  created_at   timestamptz not null default now()
++);
++
++create index if not exists resources_created_at_idx
++  on public.resources (created_at desc);
++
++-- A user's starred resources ("My Library").
++create table if not exists public.user_bookmarks (
++  user_id      uuid not null references auth.users (id) on delete cascade,
++  resource_id  uuid not null references public.resources (id) on delete cascade,
++  created_at   timestamptz not null default now(),
++  primary key (user_id, resource_id)
++);
++
++-- One row per user; tracks the "upload 3 PDFs" welcome step.
++create table if not exists public.user_profiles (
++  user_id                    uuid primary key references auth.users (id) on delete cascade,
++  initial_uploads_completed  boolean not null default false,
++  created_at                 timestamptz not null default now()
++);
++
++-- =====================================================================
++-- Row Level Security  (the anon key is public, so RLS is the real protection)
++-- =====================================================================
++
++alter table public.resources      enable row level security;
++alter table public.user_bookmarks enable row level security;
++alter table public.user_profiles  enable row level security;
++
++-- resources: anyone can browse; only signed-in users can add, and only as themselves.
++drop policy if exists "resources: public read" on public.resources;
++create policy "resources: public read"
++  on public.resources for select
++  to anon, authenticated
++  using (true);
++
++drop policy if exists "resources: insert own" on public.resources;
++create policy "resources: insert own"
++  on public.resources for insert
++  to authenticated
++  with check ((select auth.uid()) = user_id);
++
++drop policy if exists "resources: update own" on public.resources;
++create policy "resources: update own"
++  on public.resources for update
++  to authenticated
++  using ((select auth.uid()) = user_id)
++  with check ((select auth.uid()) = user_id);
++
++drop policy if exists "resources: delete own" on public.resources;
++create policy "resources: delete own"
++  on public.resources for delete
++  to authenticated
++  using ((select auth.uid()) = user_id);
++
++-- user_bookmarks: private to each user.
++drop policy if exists "bookmarks: manage own" on public.user_bookmarks;
++create policy "bookmarks: manage own"
++  on public.user_bookmarks for all
++  to authenticated
++  using ((select auth.uid()) = user_id)
++  with check ((select auth.uid()) = user_id);
++
++-- user_profiles: private to each user.
++drop policy if exists "profiles: manage own" on public.user_profiles;
++create policy "profiles: manage own"
++  on public.user_profiles for all
++  to authenticated
++  using ((select auth.uid()) = user_id)
++  with check ((select auth.uid()) = user_id);
++
++-- Explicit grants (newer Supabase projects may not expose new tables automatically).
++grant select                         on public.resources      to anon, authenticated;
++grant insert, update, delete         on public.resources      to authenticated;
++grant select, insert, delete         on public.user_bookmarks to authenticated;
++grant select, insert, update         on public.user_profiles  to authenticated;
++
++-- =====================================================================
++-- Storage: bucket "study-files" (name is hard-coded in src/App.jsx)
++-- =====================================================================
++
++-- Public bucket (the app uses getPublicUrl), 50 MB per file (matches the upload dialog).
++insert into storage.buckets (id, name, public, file_size_limit)
++values ('study-files', 'study-files', true, 52428800)
++on conflict (id) do update
++  set public = excluded.public,
++      file_size_limit = excluded.file_size_limit;
++
++-- Anyone can read/list files.
++drop policy if exists "study-files: public read" on storage.objects;
++create policy "study-files: public read"
++  on storage.objects for select
++  to anon, authenticated
++  using (bucket_id = 'study-files');
++
++-- Signed-in users can upload only into their own folder:
++--   <user-id>/<uuid>.<ext>          (normal uploads)
++--   setup/<user-id>/<uuid>.<ext>    (welcome-step uploads)
++drop policy if exists "study-files: upload to own folder" on storage.objects;
++create policy "study-files: upload to own folder"
++  on storage.objects for insert
++  to authenticated
++  with check (
++    bucket_id = 'study-files'
++    and (
++      (storage.foldername(name))[1] = (select auth.uid())::text
++      or (
++        (storage.foldername(name))[1] = 'setup'
++        and (storage.foldername(name))[2] = (select auth.uid())::text
++      )
++    )
++  );
++
++-- The app uploads with { upsert: true }, which also needs UPDATE on the same paths.
++drop policy if exists "study-files: update own files" on storage.objects;
++create policy "study-files: update own files"
++  on storage.objects for update
++  to authenticated
++  using (
++    bucket_id = 'study-files'
++    and (
++      (storage.foldername(name))[1] = (select auth.uid())::text
++      or (
++        (storage.foldername(name))[1] = 'setup'
++        and (storage.foldername(name))[2] = (select auth.uid())::text
++      )
++    )
++  );
++
++drop policy if exists "study-files: delete own files" on storage.objects;
++create policy "study-files: delete own files"
++  on storage.objects for delete
++  to authenticated
++  using (
++    bucket_id = 'study-files'
++    and (
++      (storage.foldername(name))[1] = (select auth.uid())::text
++      or (
++        (storage.foldername(name))[1] = 'setup'
++        and (storage.foldername(name))[2] = (select auth.uid())::text
++      )
++    )
++  );
+diff --git a/vercel.json b/vercel.json
+deleted file mode 100644
+index 1323cda..0000000
+--- a/vercel.json
++++ /dev/null
+@@ -1,8 +0,0 @@
+-{
+-  "rewrites": [
+-    {
+-      "source": "/(.*)",
+-      "destination": "/index.html"
+-    }
+-  ]
+-}
+diff --git a/vite.config.js b/vite.config.js
+index 8b0f57b..56b0bfb 100644
+--- a/vite.config.js
++++ b/vite.config.js
+@@ -2,6 +2,11 @@ import { defineConfig } from 'vite'
+ import react from '@vitejs/plugin-react'
+ 
+ // https://vite.dev/config/
+-export default defineConfig({
++export default defineConfig(({ mode }) => ({
++  // GitHub Pages serves a project site from /<repo-name>/, so production builds
++  // must prefix asset URLs with it. Both `vite build` and `vite preview` run in
++  // "production" mode (so preview mirrors the deployed site); `npm run dev` stays on "/".
++  // If you rename the repo or add a custom domain, change this to match (custom domain: '/').
++  base: mode === 'production' ? '/studyhive/' : '/',
+   plugins: [react()],
+-})
++}))
