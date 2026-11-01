@@ -67,7 +67,7 @@ async function testTablesExist() {
   
   for (const table of tables) {
     try {
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from(table)
         .select('*')
         .limit(1);
@@ -272,7 +272,7 @@ async function testFilterQueries() {
         }
       }
 
-      const { data, error } = await query;
+      const { error } = await query;
 
       if (error && error.code !== 'PGRST116') {
         log(`⚠️  WARNING: ${filter.name} - ${error.message}`, 'yellow');

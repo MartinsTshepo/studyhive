@@ -14,7 +14,7 @@ export default function SupabaseTestRunner() {
     
     try {
       console.clear();
-      log('%c🧪 STUDYHIVE SUPABASE TEST SUITE 🧪', 'color: #2563eb; font-size: 16px; font-weight: bold;');
+      console.log('%c🧪 STUDYHIVE SUPABASE TEST SUITE 🧪','color: #2563eb; font-size: 16px; font-weight: bold;');
       
       const result = await runAllTests();
       
@@ -45,7 +45,7 @@ export default function SupabaseTestRunner() {
     
     try {
       console.clear();
-      log('%c📤 UPLOAD FLOW SIMULATION 📤', 'color: #10b981; font-size: 16px; font-weight: bold;');
+      console.log('%c📤 UPLOAD FLOW SIMULATION 📤','color: #10b981; font-size: 16px; font-weight: bold;');
       
       const result = await simulateUploadFlow();
       
